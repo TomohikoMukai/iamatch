@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>IAスタジオ配属スクリプト</title>
+  <meta charset="UTF-8">
+</head>
+<body>
+  <form name="student">
+    <label>応募ファイル:</label>
+    <input name="student" type="file" />
+  </form>
+  <table>
+    <tbody id="score_csv"></tbody>
+  </table>
+  <script>
+    // スコア計算
+    function calcScore(personalData) {
+      return Math.random();
+    }
+    // データ整形
+    function formatInput(data) {
+      const dataArray = []
+      const linewiseData = data.split('\n');
+      let index = 0;
+      linewiseData.forEach(line => {
+        if (line.length > 0) {
+          const s = calcScore(line);
+          const elements = line.split(',')
+          dataArray.push({id: index, studio : 0, name: elements[0], score: s, pref : [elements[1], elements[2], elements[3]]})
+          ++index;
+        }
+      })
+      return dataArray;
+    }
+    function checkTerminal(students) {
+      for (let s = 0; s < students.length; ++s) {
+        if (students[s].studio == 0) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    // スタジオ数
+    const numStudios = 4;
+    // スタジオの定員数
+    const numSlots = [ 1, 1, 1, 1 ];
+    // 申し込みリスト
+    let applicants   = [ [], [], [], [] ];
+
+    // 以降、ファイルまわりのアレコレ
+    const form = document.forms.student;
+    const scoreTableElement = document.getElementById('score_csv');
+    form.student.addEventListener('change', function(event) {
+      const fileInfo = event.target.files[0];
+      const reader = new FileReader();
+      reader.readAsText(fileInfo);
+
+      reader.addEventListener('load', function() {
+        // ロードしたデータの整形（スコア計算はこの中に）
+        const students = formatInput(reader.result);
+        // 全員が仮配属か未決定になるまでループ
+        while (!checkTerminal(students)) {
+          // 現時点で希望するスタジオにエントリー
+          students.forEach(student => {
+            const preflab = student.pref[0];
+            applicants[preflab - 1].push(student.id);
+          });
+          // スコア順にソート
+          applicants.forEach(lab => {
+            lab.sort(function(x, y) {
+              return students[x].score - students[y].score;
+            });
+          });
+          // 仮配属/落選の決定
+          for (let s = 0; s < numStudios; ++s) {
+            let  = 0;
+            // 仮配属決定
+            for ( ; i < numSlots[s] && i < applicants[s].length; ++i) {
+              const id = applicants[s][i];
+              students[id].studio = s + 1;
+            }
+            // 落選者 
+            for ( ; i < applicants[s].length; ++i) {
+              const id = applicants[s][i];
+              students[id].pref.shift();
+              students[id].studio = 0; // 次のチャンス
+              if (students[id].pref.length <= 0) {
+                students[id].studio = -1; // 未決定状態
+              }
+            }
+            applicants[l] = []
+          }
+        }
+
+        let displayElement = '';
+        students.forEach(s => {
+          displayElement += '<tr>';
+          displayElement += `<td>${s.name}</td>`;
+          displayElement += `<td>${s.studio}</td>`;
+          displayElement += `<td>${s.score}</td>`;
+          displayElement += '</tr>';
+        });
+        scoreTableElement.innerHTML = displayElement;
+      });
+    });
+  </script>
+</body>
+</html>

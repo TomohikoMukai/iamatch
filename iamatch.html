@@ -1,95 +1,118 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>IAスタジオ配属スクリプト</title>
+  <title>IA研究室配属スクリプト</title>
   <meta charset="UTF-8">
 </head>
 <body>
   <form name="student">
-    <label>応募ファイル:</label>
+    <label>志望者リスト:</label>
     <input name="student" type="file" />
   </form>
   <table>
-    <tbody id="score_csv"></tbody>
+    <tbody id="result"></tbody>
   </table>
   <script>
-    // スコア計算
-    function calcScore(personalData) {
-      return Math.random();
-    }
     // データ整形
     function formatInput(data) {
-      const dataArray = []
-      const linewiseData = data.split('\n');
+      let students = []
+      const lines = data.split('\n');
       let index = 0;
-      linewiseData.forEach(line => {
-        if (line.length > 0) {
-          const s = calcScore(line);
-          const elements = line.split(',')
-          dataArray.push({id: index, studio : 0, name: elements[0], score: s, pref : [elements[1], elements[2], elements[3]]})
+      lines.forEach(tokens => {
+        if (tokens.length > 0) {
+          const elements = tokens.split(',')
+          let student = {
+            id: index,         // エントリーID
+            name: elements[0], // 氏名
+            gpa: elements[1],  // 通算GPA
+            status: 0,         // 仮配属研究室ID（0: 処理中、-1: 未決定、> 0: 研究室ID）
+            preference: []     // 志望スタジオ情報
+          };
+          for (let e = 2; e < elements.length; e += 2)
+          {
+            const pref = {
+              lab: elements[e],      // 研究室ID
+              point: elements[e + 1] // ポイント
+            };
+            student.preference.push(pref);
+          }
+          students.push(student);
           ++index;
         }
-      })
-      return dataArray;
+      });
+      return students;
     }
+    
+    // 配属ループ修了判定ヘルパー
     function checkTerminal(students) {
       for (let s = 0; s < students.length; ++s) {
-        if (students[s].studio == 0) {
+        if (students[s].status == 0) {
           return false;
         }
       }
       return true;
     }
 
-    // スタジオ数
-    const numStudios = 4;
+    // 研究室数
+    const numLabs = 4;
     // スタジオの定員数
-    const numSlots = [ 1, 1, 1, 1 ];
+    const numSlots = [ 4, 4, 3, 2 ];
     // 申し込みリスト
-    let applicants   = [ [], [], [], [] ];
+    let applicants = [ [], [], [], [] ];
 
-    // 以降、ファイルまわりのアレコレ
+    // 以降、しばらくファイルまわりのアレコレ
     const form = document.forms.student;
-    const scoreTableElement = document.getElementById('score_csv');
+    const resultElement = document.getElementById('result');
     form.student.addEventListener('change', function(event) {
       const fileInfo = event.target.files[0];
       const reader = new FileReader();
       reader.readAsText(fileInfo);
 
       reader.addEventListener('load', function() {
-        // ロードしたデータの整形（スコア計算はこの中に）
+        // 配属アルゴリズム本体
+        //
+        // ロードしたデータの整形
         const students = formatInput(reader.result);
         // 全員が仮配属か未決定になるまでループ
         while (!checkTerminal(students)) {
           // 現時点で希望するスタジオにエントリー
           students.forEach(student => {
-            const preflab = student.pref[0];
-            applicants[preflab - 1].push(student.id);
+            const lid = student.preference[0].lab - 1;
+            applicants[lid].push({
+              id: student.id,
+              point: student.preference[0].point,
+              gpa: student.gpa});
           });
-          // スコア順にソート
+          // 研究室ごとにポイント&GPA順に降順ソート
           applicants.forEach(lab => {
             lab.sort(function(x, y) {
-              return students[x].score - students[y].score;
+              if (y.point != x.point)
+              {
+                 return y.point - x.point;
+              }
+              return y.gpa - x.gpa;
             });
           });
-          // 仮配属/落選の決定
-          for (let s = 0; s < numStudios; ++s) {
-            let  = 0;
-            // 仮配属決定
-            for ( ; i < numSlots[s] && i < applicants[s].length; ++i) {
-              const id = applicants[s][i];
-              students[id].studio = s + 1;
+          // 仮配属/落選の振り分け
+          for (let l = 0; l < numLabs; ++l) {
+            let a = 0;
+            // 仮配属処理
+            for ( ; a < numSlots[l] && a < applicants[l].length; ++a) {
+              const sid = applicants[l][a].id;
+              students[sid].status = l + 1;
             }
-            // 落選者 
-            for ( ; i < applicants[s].length; ++i) {
-              const id = applicants[s][i];
-              students[id].pref.shift();
-              students[id].studio = 0; // 次のチャンス
-              if (students[id].pref.length <= 0) {
-                students[id].studio = -1; // 未決定状態
+            // 落選者処理
+            for ( ; a < applicants[l].length; ++a) {
+              // 志望を繰り下げ
+              const sid = applicants[l][a].id;
+              students[sid].status = 0;
+              students[sid].preference.shift();
+              // 志望先がなくなったら未決定状態に
+              if (students[sid].preference.length <= 0) {
+                students[sid].status = -1;
               }
             }
-            applicants[l] = []
+            applicants[l] = [] // 志望者リストのクリア
           }
         }
 
@@ -97,11 +120,10 @@
         students.forEach(s => {
           displayElement += '<tr>';
           displayElement += `<td>${s.name}</td>`;
-          displayElement += `<td>${s.studio}</td>`;
-          displayElement += `<td>${s.score}</td>`;
+          displayElement += `<td>${s.status}</td>`;
           displayElement += '</tr>';
         });
-        scoreTableElement.innerHTML = displayElement;
+        resultElement.innerHTML = displayElement;
       });
     });
   </script>

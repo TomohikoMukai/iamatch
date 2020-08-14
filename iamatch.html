@@ -17,28 +17,30 @@
     function formatInput(data) {
       let students = []
       const lines = data.split('\n');
+      lines.shift(); // 見出し行は破棄
       let index = 0;
       lines.forEach(tokens => {
-        if (tokens.length > 0) {
-          const elements = tokens.split(',')
-          let student = {
-            id: index,         // エントリーID
-            name: elements[0], // 氏名
-            gpa: elements[1],  // 通算GPA
-            status: 0,         // 仮配属研究室ID（0: 処理中、-1: 未決定、> 0: 研究室ID）
-            preference: []     // 志望スタジオ情報
-          };
-          for (let e = 2; e < elements.length; e += 2)
-          {
-            const pref = {
-              lab: elements[e],      // 研究室ID
-              point: elements[e + 1] // ポイント
-            };
-            student.preference.push(pref);
-          }
-          students.push(student);
-          ++index;
+        if (tokens.length == 0) {
+          return;
         }
+        const elements = tokens.split(',')
+        let student = {
+          id:     index,       // エントリーID
+          name:   elements[5], // 氏名
+          gpa:    elements[6], // 通算GPA
+          status: 0,           // 仮配属研究室ID（0: 処理中、-1: 未決定、string: 研究室名）
+          entry:  []           // 志望スタジオ情報
+        };
+        for (let e = 7; e < elements.length; e += 2)
+        {
+          const pref = {
+            lab:   elements[e],    // 研究室名
+            point: elements[e + 1] // ポイント
+          };
+          student.entry.push(pref);
+        }
+        students.push(student);
+        ++index;
       });
       return students;
     }
@@ -53,12 +55,21 @@
       return true;
     }
 
-    // 研究室数
-    const numLabs = 4;
-    // スタジオの定員数
-    const numSlots = [ 4, 4, 3, 2 ];
-    // 申し込みリスト
-    let applicants = [ [], [], [], [] ];
+    // 研究室リスト
+    const labs = {
+      "Editorial":           {slots: 4, applicants: []},
+      "EquipmentService":    {slots: 4, applicants: []},
+      "Ergonomic":           {slots: 2, applicants: []},
+      "InteractiveArt":      {slots: 3, applicants: []},
+      "Interface":           {slots: 1, applicants: []},
+      "Interior":            {slots: 1, applicants: []},
+      "Kinematograph":       {slots: 1, applicants: []},
+      "Network":             {slots: 1, applicants: []},
+      "Software":            {slots: 1, applicants: []},
+      "Spatial":             {slots: 1, applicants: []},
+      "Transportation":      {slots: 1, applicants: []}, 
+      "VisualCommunication": {slots: 1, applicants: []}
+    };
 
     // 以降、しばらくファイルまわりのアレコレ
     const form = document.forms.student;
@@ -67,7 +78,6 @@
       const fileInfo = event.target.files[0];
       const reader = new FileReader();
       reader.readAsText(fileInfo);
-
       reader.addEventListener('load', function() {
         // 配属アルゴリズム本体
         //
@@ -77,42 +87,40 @@
         while (!checkTerminal(students)) {
           // 現時点で希望するスタジオにエントリー
           students.forEach(student => {
-            const lid = student.preference[0].lab - 1;
-            applicants[lid].push({
-              id: student.id,
-              point: student.preference[0].point,
-              gpa: student.gpa});
+            const name = student.entry[0].lab;
+            labs[name].applicants.push({
+              id:    student.id,
+              gpa:   student.gpa,
+              point: student.entry[0].point
+            });
           });
-          // 研究室ごとにポイント&GPA順に降順ソート
-          applicants.forEach(lab => {
-            lab.sort(function(x, y) {
-              if (y.point != x.point)
-              {
+          for (let [name, data] of Object.entries(labs)) {
+            // ポイント&GPA順に降順ソート
+            data.applicants.sort(function(x, y) {
+              if (y.point != x.point) {
                  return y.point - x.point;
               }
               return y.gpa - x.gpa;
             });
-          });
-          // 仮配属/落選の振り分け
-          for (let l = 0; l < numLabs; ++l) {
-            let a = 0;
             // 仮配属処理
-            for ( ; a < numSlots[l] && a < applicants[l].length; ++a) {
-              const sid = applicants[l][a].id;
-              students[sid].status = l + 1;
+            const numApplicants = data.applicants.length;
+            let a = 0;
+            for ( ; a < data.slots && a < numApplicants; ++a) {
+              const sid = data.applicants[a].id;
+              students[sid].status = name;
             }
             // 落選者処理
-            for ( ; a < applicants[l].length; ++a) {
+            for ( ; a < numApplicants; ++a) {
               // 志望を繰り下げ
-              const sid = applicants[l][a].id;
+              const sid = data.applicants[a].id;
               students[sid].status = 0;
-              students[sid].preference.shift();
+              students[sid].entry.shift();
               // 志望先がなくなったら未決定状態に
-              if (students[sid].preference.length <= 0) {
+              if (students[sid].entry.length <= 0) {
                 students[sid].status = -1;
               }
             }
-            applicants[l] = [] // 志望者リストのクリア
+            data.applicants = [] // 志望者リストのクリア
           }
         }
 

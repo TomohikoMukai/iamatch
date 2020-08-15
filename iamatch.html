@@ -26,12 +26,12 @@
         const elements = tokens.split(',')
         let student = {
           id:     index,       // エントリーID
-          name:   elements[5], // 氏名
-          gpa:    elements[6], // 通算GPA
+          name:   elements[6], // 氏名
+          gpa:    elements[7], // 通算GPA
           status: 0,           // 仮配属研究室ID（0: 処理中、-1: 未決定、string: 研究室名）
           entry:  []           // 志望スタジオ情報
         };
-        for (let e = 7; e < elements.length; e += 2)
+        for (let e = 8; e + 1 < elements.length; e += 2)
         {
           const pref = {
             lab:   elements[e],    // 研究室名

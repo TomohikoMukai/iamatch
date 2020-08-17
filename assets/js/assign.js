@@ -1,36 +1,3 @@
-// CSV用途データ整形
-/*
-function formatInput(data) {
-    let students = []
-    const lines = data.split('\n');
-    lines.shift(); // 見出し行は破棄
-    let index = 0;
-    lines.forEach(tokens => {
-      if (tokens.length == 0) {
-        return;
-      }
-      const elements = tokens.split(',')
-      let student = {
-        id:     index,       // エントリーID
-        name:   elements[6], // 氏名
-        gpa:    elements[7], // 通算GPA
-        status: 0,           // 仮配属研究室ID（0: 処理中、-1: 未決定、string: 研究室名）
-        entry:  []           // 志望スタジオ情報
-      };
-      for (let e = 8; e + 1 < elements.length; e += 2)
-      {
-        const pref = {
-          lab:   elements[e],    // 研究室名
-          point: elements[e + 1] // ポイント
-        };
-        student.entry.push(pref);
-      }
-      students.push(student);
-      ++index;
-    });
-    return students;
-  }
-*/
 // 配属ループ修了判定ヘルパー
 function checkTerminal(students) {
     for (let s = 0; s < students.length; ++s) {
@@ -52,42 +19,57 @@ form.student.addEventListener('change', function (event) {
     reader.addEventListener('load', function () {
         // 研究室リスト
         const labs = {
-            "Editorial": { slots: 4, applicants: [] },
-            "EquipmentService": { slots: 4, applicants: [] },
-            "Ergonomic": { slots: 2, applicants: [] },
-            "InteractiveArt": { slots: 3, applicants: [] },
-            "Interface": { slots: 1, applicants: [] },
-            "Interior": { slots: 1, applicants: [] },
-            "Kinematograph": { slots: 1, applicants: [] },
-            "Network": { slots: 1, applicants: [] },
-            "Software": { slots: 1, applicants: [] },
-            "Spatial": { slots: 1, applicants: [] },
-            "Transportation": { slots: 1, applicants: [] },
-            "VisualCommunication": { slots: 1, applicants: [] }
+            "Editorial": { slots: 5, applicants: [] },
+            "EquipmentService": { slots: 3, applicants: [] },
+            "Ergonomics": { slots: 5, applicants: [] },
+            "Interactive": { slots: 5, applicants: [] },
+            "Interface": { slots: 3, applicants: [] },
+            "Interior": { slots: 5, applicants: [] },
+            "Kinematograph": { slots: 3, applicants: [] },
+            "Network": { slots: 3, applicants: [] },
+            "Software": { slots: 3, applicants: [] },
+            "Spatial": { slots: 5, applicants: [] },
+            "Transportation": { slots: 5, applicants: [] },
+            "VisualCommunication": { slots: 5, applicants: [] }
         };
         // 配属アルゴリズム本体
         // エクセルファイルを読み込んで，読み込み成功なら処理をすすめる
         readXlsxFile(fileInfo).then(function (rows) {
-            let students = []
-
             // エクセルテーブルを連想配列に準備
-            for (let i = 1; i < rows.length; i++) {
+            let students = []
+            let entriedStudents = [];
+            for (let i = 1; i < rows.length; i++) {                
                 const elements = rows[i];
                 let student = {
-                    id: i - 1, // エントリーID
-                    name: elements[5],
-                    gpa: elements[6],
-                    status: 0,
-                    entry: []
+                    id: entriedStudents.length, // エントリーID
+                    name: elements[6], // 氏名
+                    gpa: elements[7], // GPA
+                    units: elements[8], // 取得単位数
+                    status: 0, // 仮配属ステータス
+                    entry: [] // 志望研究室
                 }
-                for (let e = 7; e < elements.length; e += 2) {
+                let entriedLab = new Set();
+                for (let e = 9; e < elements.length - 2; e += 2) {
                     const pref = {
                         lab: elements[e],    // 研究室名
                         point: elements[e + 1] // ポイント
                     };
+                    if (entriedLab.has(elements[e])) {
+                        alert(elements[6] + "は" + elements[e] + "に重複してエントリーしています");
+                    }
                     student.entry.push(pref);
+                    entriedLab.add(elements[e]);
                 }
-                students.push(student);
+                // 複数回応募している場合は既登録内容を上書き
+                const esid = entriedStudents.findIndex((name) => name == student.name);
+                if (esid >= 0) {
+                    student.id = esid;
+                    students[esid] = student;
+                }
+                else { // 初回レコードはそのまま追加
+                    students.push(student);
+                    entriedStudents.push(student.name);
+                }
             }
 
             // 全員が仮配属か未決定になるまでループ
@@ -103,17 +85,27 @@ form.student.addEventListener('change', function (event) {
                     }
                     labs[name].applicants.push({
                         id: student.id,
+                        point: student.entry[0].point,
                         gpa: student.gpa,
-                        point: student.entry[0].point
+                        units: student.units
                     });
                 });
                 for (let [name, data] of Object.entries(labs)) {
-                    // ポイント&GPA順に降順ソート
+                    // ポイント&GPA&取得単位数順に降順ソート
                     data.applicants.sort(function (x, y) {
                         if (y.point != x.point) {
                             return y.point - x.point;
                         }
-                        return y.gpa - x.gpa;
+                        if (y.gpa != x.gpa) {
+                            return y.gpa - x.gpa;
+                        }
+                        if (y.units == x.units) {
+                            alert("同率のため比較不可: " + name + " / "
+                                + students[x.id].name + " - "
+                                + students[y.id].name);
+                            throw new Error("同率のため比較不可");
+                        }
+                        return y.units - x.units;
                     });
                     // 仮配属処理
                     const numApplicants = data.applicants.length;

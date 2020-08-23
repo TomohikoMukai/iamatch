@@ -1,7 +1,7 @@
 // 配属ループ修了判定ヘルパー
 function checkTerminal(students) {
     for (let s = 0; s < students.length; ++s) {
-        if (students[s].status == 0) {
+        if (students[s].status == "") {
             return false;
         }
     }
@@ -19,18 +19,18 @@ form.student.addEventListener('change', function (event) {
     reader.addEventListener('load', function () {
         // 研究室リスト
         const labs = {
-            "Editorial": { slots:  3, applicants: [] },
-            "EquipmentService": { slots:  5, applicants: [] },
-            "Ergonomics": { slots:  3, applicants: [] },
-            "Interactive": { slots:  5, applicants: [] },
-            "Interface": { slots:  3, applicants: [] },
-            "Interior": { slots:  5, applicants: [] },
-            "Kinematograph": { slots:  3, applicants: [] },
-            "Network": { slots:  5, applicants: [] },
-            "Software": { slots:  3, applicants: [] },
-            "Spatial": { slots:  5, applicants: [] },
-            "Transportation": { slots:  3, applicants: [] },
-            "VisualCommunication": { slots:  5, applicants: [] }
+            "Editorial": { slots: 3, applicants: [] },
+            "EquipmentService": { slots: 3, applicants: [] },
+            "Ergonomics": { slots: 3, applicants: [] },
+            "Interactive": { slots: 3, applicants: [] },
+            "Interface": { slots: 3, applicants: [] },
+            "Interior": { slots: 3, applicants: [] },
+            "Kinematograph": { slots: 3, applicants: [] },
+            "Network": { slots: 3, applicants: [] },
+            "Software": { slots: 3, applicants: [] },
+            "Spatial": { slots: 3, applicants: [] },
+            "Transportation": { slots: 3, applicants: [] },
+            "VisualCommunication": { slots: 3, applicants: [] }
         };
         
         let numSlots = 0;
@@ -51,7 +51,7 @@ form.student.addEventListener('change', function (event) {
                     name: elements[6], // 氏名
                     gpa: elements[7], // GPA
                     units: elements[8], // 取得単位数
-                    status: 0, // 仮配属ステータス
+                    status: "", // 仮配属ステータス
                     entry: [] // 志望研究室
                 }
                 let entriedLab = new Set();
@@ -78,10 +78,6 @@ form.student.addEventListener('change', function (event) {
                 }
             }
             
-            if (numSlots < students.length) {
-            	alert("定員数が学生数を下回っています");
-            	throw new Error("定員数不足");
-            }
 
             // 全員が仮配属か未決定になるまでループ
             while (!checkTerminal(students)) {
@@ -90,16 +86,13 @@ form.student.addEventListener('change', function (event) {
                     let name;
                     if (student.entry.length > 0) {
                         name = student.entry[0].lab;
+                        labs[name].applicants.push({
+                            id: student.id,
+                            point: student.entry[0].point,
+                            gpa: student.gpa,
+                            units: student.units
+                        });
                     }
-                    else {
-                        window.confirm(student.id);
-                    }
-                    labs[name].applicants.push({
-                        id: student.id,
-                        point: student.entry[0].point,
-                        gpa: student.gpa,
-                        units: student.units
-                    });
                 });
                 for (let [name, data] of Object.entries(labs)) {
                     // ポイント&GPA&取得単位数順に降順ソート
@@ -129,11 +122,11 @@ form.student.addEventListener('change', function (event) {
                     for (; a < numApplicants; ++a) {
                         // 志望を繰り下げ
                         const sid = data.applicants[a].id;
-                        students[sid].status = 0;
+                        students[sid].status = "";
                         students[sid].entry.shift();
                         // 志望先がなくなったら未決定状態に
                         if (students[sid].entry.length <= 0) {
-                            students[sid].status = -1;
+                            students[sid].status = "undefined";
                         }
                     }
                     data.applicants = [] // 志望者リストのクリア

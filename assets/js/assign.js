@@ -19,19 +19,25 @@ form.student.addEventListener('change', function (event) {
     reader.addEventListener('load', function () {
         // 研究室リスト
         const labs = {
-            "Editorial": { slots: 5, applicants: [] },
-            "EquipmentService": { slots: 3, applicants: [] },
-            "Ergonomics": { slots: 5, applicants: [] },
-            "Interactive": { slots: 5, applicants: [] },
-            "Interface": { slots: 3, applicants: [] },
-            "Interior": { slots: 5, applicants: [] },
-            "Kinematograph": { slots: 3, applicants: [] },
-            "Network": { slots: 3, applicants: [] },
-            "Software": { slots: 3, applicants: [] },
-            "Spatial": { slots: 5, applicants: [] },
-            "Transportation": { slots: 5, applicants: [] },
-            "VisualCommunication": { slots: 5, applicants: [] }
+            "Editorial": { slots:  3, applicants: [] },
+            "EquipmentService": { slots:  5, applicants: [] },
+            "Ergonomics": { slots:  3, applicants: [] },
+            "Interactive": { slots:  5, applicants: [] },
+            "Interface": { slots:  3, applicants: [] },
+            "Interior": { slots:  5, applicants: [] },
+            "Kinematograph": { slots:  3, applicants: [] },
+            "Network": { slots:  5, applicants: [] },
+            "Software": { slots:  3, applicants: [] },
+            "Spatial": { slots:  5, applicants: [] },
+            "Transportation": { slots:  3, applicants: [] },
+            "VisualCommunication": { slots:  5, applicants: [] }
         };
+        
+        let numSlots = 0;
+        for (let [name, data] of Object.entries(labs)) {
+        	numSlots += data.slots;
+        }
+        
         // 配属アルゴリズム本体
         // エクセルファイルを読み込んで，読み込み成功なら処理をすすめる
         readXlsxFile(fileInfo).then(function (rows) {
@@ -70,6 +76,11 @@ form.student.addEventListener('change', function (event) {
                     students.push(student);
                     entriedStudents.push(student.name);
                 }
+            }
+            
+            if (numSlots < students.length) {
+            	alert("定員数が学生数を下回っています");
+            	throw new Error("定員数不足");
             }
 
             // 全員が仮配属か未決定になるまでループ
@@ -133,6 +144,7 @@ form.student.addEventListener('change', function (event) {
                 displayElement += '<tr>';
                 displayElement += `<td>${s.name}</td>`;
                 displayElement += `<td>${s.status}</td>`;
+                displayElement += `<td>${13-s.entry.length}</td>`;
                 displayElement += '</tr>';
             });
             resultElement.innerHTML = displayElement;

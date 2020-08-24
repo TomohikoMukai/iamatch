@@ -20,17 +20,17 @@ form.student.addEventListener('change', function (event) {
         // 研究室リスト
         const labs = {
             "Editorial": { slots: 3, applicants: [] },
-            "EquipmentService": { slots: 3, applicants: [] },
+            "EquipmentService": { slots: 5, applicants: [] },
             "Ergonomics": { slots: 3, applicants: [] },
-            "Interactive": { slots: 3, applicants: [] },
+            "Interactive": { slots: 5, applicants: [] },
             "Interface": { slots: 3, applicants: [] },
-            "Interior": { slots: 3, applicants: [] },
+            "Interior": { slots: 5, applicants: [] },
             "Kinematograph": { slots: 3, applicants: [] },
-            "Network": { slots: 3, applicants: [] },
+            "Network": { slots: 5, applicants: [] },
             "Software": { slots: 3, applicants: [] },
-            "Spatial": { slots: 3, applicants: [] },
+            "Spatial": { slots: 5, applicants: [] },
             "Transportation": { slots: 3, applicants: [] },
-            "VisualCommunication": { slots: 3, applicants: [] }
+            "VisualCommunication": { slots: 5, applicants: [] }
         };
         
         let numSlots = 0;
@@ -40,7 +40,7 @@ form.student.addEventListener('change', function (event) {
         
         // 配属アルゴリズム本体
         // エクセルファイルを読み込んで，読み込み成功なら処理をすすめる
-        readXlsxFile(fileInfo).then(function (rows) {
+        readXlsxFile(fileInfo).then(function(rows) {
             // エクセルテーブルを連想配列に準備
             let students = []
             let entriedStudents = [];
@@ -77,15 +77,18 @@ form.student.addEventListener('change', function (event) {
                     entriedStudents.push(student.name);
                 }
             }
-            
+
+            if (numSlots < students.length) {
+                alert("志望者数が研究室定員総数を上回っています");
+                throw new Error("志望者数超過");
+            }
 
             // 全員が仮配属か未決定になるまでループ
             while (!checkTerminal(students)) {
                 // 現時点で希望するスタジオにエントリー
                 students.forEach(student => {
-                    let name;
                     if (student.entry.length > 0) {
-                        name = student.entry[0].lab;
+                        const name = student.entry[0].lab;
                         labs[name].applicants.push({
                             id: student.id,
                             point: student.entry[0].point,
@@ -126,7 +129,7 @@ form.student.addEventListener('change', function (event) {
                         students[sid].entry.shift();
                         // 志望先がなくなったら未決定状態に
                         if (students[sid].entry.length <= 0) {
-                            students[sid].status = "undefined";
+                            students[sid].status = "unassigned";
                         }
                     }
                     data.applicants = [] // 志望者リストのクリア
@@ -142,7 +145,5 @@ form.student.addEventListener('change', function (event) {
             });
             resultElement.innerHTML = displayElement;
         });
-
-
     });
 });

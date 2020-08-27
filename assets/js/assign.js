@@ -18,25 +18,25 @@ form.student.addEventListener('change', function (event) {
 
     reader.addEventListener('load', function () {
         // 研究室リスト
-        const labs = {
-            "Editorial": { slots: 3, applicants: [] },
-            "EquipmentService": { slots: 5, applicants: [] },
-            "Ergonomics": { slots: 3, applicants: [] },
-            "Interactive": { slots: 5, applicants: [] },
-            "Interface": { slots: 3, applicants: [] },
-            "Interior": { slots: 5, applicants: [] },
-            "Kinematograph": { slots: 3, applicants: [] },
-            "Network": { slots: 5, applicants: [] },
-            "Software": { slots: 3, applicants: [] },
-            "Spatial": { slots: 5, applicants: [] },
-            "Transportation": { slots: 3, applicants: [] },
-            "VisualCommunication": { slots: 5, applicants: [] }
-        };
+        const labs = [
+            { name: "Ergonomics", slots: 3, applicants: [] },
+            { name: "Transportation",  slots: 3, applicants: [] },
+            { name: "EquipmentService",  slots: 3, applicants: [] },
+            { name: "Interior",  slots: 3, applicants: [] },
+            { name: "Spatial",  slots: 2, applicants: [] },
+            { name: "Interface",  slots: 2, applicants: [] },
+            { name: "Interactive",  slots: 2, applicants: [] },
+            { name: "Software",  slots: 2, applicants: [] },
+            { name: "Kinematograph",  slots: 2, applicants: [] },
+            { name: "Network",  slots: 2, applicants: [] },
+            { name: "VisualCommunication",  slots: 2, applicants: [] },
+            { name: "Editorial",  slots: 2, applicants: [] }
+        ];
         
         let numSlots = 0;
-        for (let [name, data] of Object.entries(labs)) {
-        	numSlots += data.slots;
-        }
+        labs.forEach(lab => {
+            numSlots += lab.slots;
+        });
         
         // 配属アルゴリズム本体
         // エクセルファイルを読み込んで，読み込み成功なら処理をすすめる
@@ -49,23 +49,23 @@ form.student.addEventListener('change', function (event) {
                 let student = {
                     id: entriedStudents.length, // エントリーID
                     name: elements[6], // 氏名
-                    gpa: elements[7], // GPA
-                    units: elements[8], // 取得単位数
+                    gpa: elements[8], // GPA
+                    units: elements[9], // 取得単位数
                     status: "", // 仮配属ステータス
                     entry: [] // 志望研究室
                 }
-                let entriedLab = new Set();
-                for (let e = 9; e < elements.length - 2; e += 2) {
+                for (let l = 0; l < 12; ++l) {
                     const pref = {
-                        lab: elements[e],    // 研究室名
-                        point: elements[e + 1] // ポイント
+                        lab: labs[l].name, // 研究室名
+                        priority: elements[l * 2 + 10], // 志望順
+                        point: elements[l * 2 + 11], // ポイント
                     };
-                    if (entriedLab.has(elements[e])) {
-                        alert(elements[6] + "は" + elements[e] + "に重複してエントリーしています");
-                    }
                     student.entry.push(pref);
-                    entriedLab.add(elements[e]);
                 }
+                // 志望順位でソート
+                student.entry.sort(function (x, y) {
+                    return x.priority - y.priority;
+                });
                 // 複数回応募している場合は既登録内容を上書き
                 const esid = entriedStudents.findIndex((name) => name == student.name);
                 if (esid >= 0) {
@@ -89,7 +89,8 @@ form.student.addEventListener('change', function (event) {
                 students.forEach(student => {
                     if (student.entry.length > 0) {
                         const name = student.entry[0].lab;
-                        labs[name].applicants.push({
+                        let lab = labs.find(l => l.name == name);
+                        lab.applicants.push({
                             id: student.id,
                             point: student.entry[0].point,
                             gpa: student.gpa,
@@ -97,9 +98,9 @@ form.student.addEventListener('change', function (event) {
                         });
                     }
                 });
-                for (let [name, data] of Object.entries(labs)) {
+                labs.forEach(lab => {
                     // ポイント&GPA&取得単位数順に降順ソート
-                    data.applicants.sort(function (x, y) {
+                    lab.applicants.sort(function(x, y) {
                         if (y.point != x.point) {
                             return y.point - x.point;
                         }
@@ -107,7 +108,7 @@ form.student.addEventListener('change', function (event) {
                             return y.gpa - x.gpa;
                         }
                         if (y.units == x.units) {
-                            alert("同率のため比較不可: " + name + " / "
+                            alert("同率のため比較不可: " + lab.name + " / "
                                 + students[x.id].name + " - "
                                 + students[y.id].name);
                             throw new Error("同率のため比較不可");
@@ -115,16 +116,16 @@ form.student.addEventListener('change', function (event) {
                         return y.units - x.units;
                     });
                     // 仮配属処理
-                    const numApplicants = data.applicants.length;
+                    const numApplicants = lab.applicants.length;
                     let a = 0;
-                    for (; a < data.slots && a < numApplicants; ++a) {
-                        const sid = data.applicants[a].id;
-                        students[sid].status = name;
+                    for (; a < lab.slots && a < numApplicants; ++a) {
+                        const sid = lab.applicants[a].id;
+                        students[sid].status = lab.name;
                     }
                     // 落選者処理
                     for (; a < numApplicants; ++a) {
                         // 志望を繰り下げ
-                        const sid = data.applicants[a].id;
+                        const sid = lab.applicants[a].id;
                         students[sid].status = "";
                         students[sid].entry.shift();
                         // 志望先がなくなったら未決定状態に
@@ -132,8 +133,8 @@ form.student.addEventListener('change', function (event) {
                             students[sid].status = "unassigned";
                         }
                     }
-                    data.applicants = [] // 志望者リストのクリア
-                }
+                    lab.applicants = [] // 志望者リストのクリア
+                });
             }
             let displayElement = '';
             students.forEach(s => {

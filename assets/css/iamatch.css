@@ -1,5 +1,4 @@
-table, td, th {
-    border-collapse: collapse;
-    border: 1px solid black;
-    padding: 5px;
-}
+body { font-family: "M PLUS Rounded 1c"; }
+html {
+    font-size: 14px; /* ルート要素のフォントサイズを1rem=14pxと定義する */
+} 

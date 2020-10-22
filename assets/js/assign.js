@@ -120,22 +120,35 @@ function assign() {
         // 3: 氏名
         // 4: GPA
         // 5: 単位取得数
-        // 6+n*2: 研究室名
+        // 6+n*2: 研究室の希望数値（第何希望なのか？）
         // 6+n*2+1: 研究室履修ポイント
+
+        let number_of_studio = 12;
+        let data_position = {
+            timestamp: 0,
+            email: 1,
+            number: 2,
+            name: 3,
+            gpa: 4,
+            credits: 5,
+            studio: 6,
+            studio_score: 6 + 1
+        };
+
         let students = []
         let entriedStudents = [];
         for (let i = 1; i < rows.length; i++) {
             const elements = rows[i];
             let student = {
                 id: entriedStudents.length, // エントリーID
-                name: elements[3], // 氏名
-                gpa: parseFloat(elements[4]), // GPA
-                units: parseInt(elements[5]), // 取得単位数
+                name: elements[data_position.name], // 氏名
+                gpa: parseFloat(elements[data_position.gpa]), // GPA
+                units: parseInt(elements[data_position.credits]), // 取得単位数
                 status: "", // 仮配属ステータス
                 entry: [], // 志望研究室
                 entry_original: [] // 志望研究室保存用
             }
-            for (let l = 0; l < 12; ++l) {
+            for (let l = 0; l < number_of_studio; ++l) {
                 const pref = {
                     lab: labs[l].name, // 研究室名
                     priority: parseInt(elements[(l * 2) + 6]), // 志望順

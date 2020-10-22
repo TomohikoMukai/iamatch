@@ -14,28 +14,31 @@ array_studio = [
 # csvファイルの最初の列が指定する文字列を含めばその行を別ファイルに出力する例
 f_out = open(filename_output, 'w')
 
-print('ID', 'timestamp1', 'timestamp2', '365 email', '365 name', 'number', 'name',
+print('timestamp', 'email', 'number', 'name',
       'GPA', 'credit', sep=',', end=',', file=f_out)
 for studio in array_studio:
-    print('studio name', 'score', sep=',', end=',', file=f_out)
-print('emergency email', 'cellphone', sep=',', file=f_out)
+    print(studio, 'score', sep=',', end=',', file=f_out)
+print('', end='\n', file=f_out)
 
 for id in range(0, number_of_row):
-    random.shuffle(array_studio)
-    print(id, 'hogehoge', 'hogehoge', 'email', 'Name',
-          str(random.randint(1000000, 9999999)),
-          str(uuid.uuid4()),
+    print('timestamp', 'email', 'number',
+          str(id),
           str(random.uniform(2.0, 4.0)),
           str(random.randint(94, 131)),
           sep=',', end=',', file=f_out)
 
-    count_studio = len(array_studio)
-    for studio in array_studio:
-        print(studio,
-              str(random.randint(
-                  int(5.0*(count_studio/float(len(array_studio)))), 5)),
-              sep=',', end=',', file=f_out)
-        count_studio -= 1
+    rank_choice = list(range(1, len(array_studio)+1))
+    random.shuffle(rank_choice)
 
-    print('Email2', 'phonenumber', sep=',', file=f_out)
+    count = 0
+    for studio in array_studio:
+        score = int(5 *
+                    ((len(array_studio)-rank_choice[count]))/float(len(array_studio)))
+        print(rank_choice[count], score)
+        print(rank_choice[count],
+              str(random.randint(int(score), 5)),
+              sep=',', end=',', file=f_out)
+        count += 1
+
+    print('', end='\n', file=f_out)
 f_out.close()

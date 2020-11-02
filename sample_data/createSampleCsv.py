@@ -1,5 +1,15 @@
 # coding: utf-8
+# 適当なサンプルデータを生成するスクリプトです。実行すると sample.csv が作成されますが、iamachへの読み込みは .xlsx に変換して読み込ませてください。希望順位が高い研究室には履修ポイントが高く出るようになります。
 # ID,開始時刻,完了時刻,メール,名前,学修番号,氏名,累積GPA,取得単位総計,第k希望 スタジオ,第k希望 履修ポイント, メールアドレス（緊急時に連絡の取れるアドレス）, 携帯電話（緊急時に連絡の取れる電話番号）
+# // Format
+# // 0: タイムスタンプ
+# // 1: メールアドレス
+# // 2: 学習番号
+# // 3: 氏名
+# // 4: GPA
+# // 5: 単位取得数
+# // 6+n*2: 研究室の希望数値（第何希望なのか？）
+# // 6+n*2+1: 研究室履修ポイント
 import csv
 import random
 import uuid
@@ -14,28 +24,31 @@ array_studio = [
 # csvファイルの最初の列が指定する文字列を含めばその行を別ファイルに出力する例
 f_out = open(filename_output, 'w')
 
-print('ID', 'timestamp1', 'timestamp2', '365 email', '365 name', 'number', 'name',
+print('timestamp', 'email', 'number', 'name',
       'GPA', 'credit', sep=',', end=',', file=f_out)
 for studio in array_studio:
-    print('studio name', 'score', sep=',', end=',', file=f_out)
-print('emergency email', 'cellphone', sep=',', file=f_out)
+    print(studio, 'score', sep=',', end=',', file=f_out)
+print('', end='\n', file=f_out)
 
 for id in range(0, number_of_row):
-    random.shuffle(array_studio)
-    print(id, 'hogehoge', 'hogehoge', 'email', 'Name',
-          str(random.randint(1000000, 9999999)),
-          str(uuid.uuid4()),
+    print('timestamp', 'email', 'number',
+          str(id),
           str(random.uniform(2.0, 4.0)),
           str(random.randint(94, 131)),
           sep=',', end=',', file=f_out)
 
-    count_studio = len(array_studio)
-    for studio in array_studio:
-        print(studio,
-              str(random.randint(
-                  int(5.0*(count_studio/float(len(array_studio)))), 5)),
-              sep=',', end=',', file=f_out)
-        count_studio -= 1
+    rank_choice = list(range(1, len(array_studio)+1))
+    random.shuffle(rank_choice)
 
-    print('Email2', 'phonenumber', sep=',', file=f_out)
+    count = 0
+    for studio in array_studio:
+        score = int(5 *
+                    ((len(array_studio)-rank_choice[count]))/float(len(array_studio)))
+        print(rank_choice[count], score)
+        print(rank_choice[count],
+              str(random.randint(int(score), 5)),
+              sep=',', end=',', file=f_out)
+        count += 1
+
+    print('', end='\n', file=f_out)
 f_out.close()

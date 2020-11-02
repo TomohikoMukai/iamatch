@@ -8,8 +8,16 @@
 
 そこでぼくのでばんってわけなんだ。このけんきゅうしつじどうはいぞくアルゴリズムを、はいぞくさぎょうもふくめて完全じどうかしよう、という目的でぼくがつくられたんだ。
 
+2020年11月2日追記：iamatchが開発された同じじきに、おおさかでんきつうしんだいがくも安定マッチングあるごりずむをつかって、けんきゅうしつはいぞくをしたんだって。https://www.osakac.ac.jp/news/2020/2191 
+
+
 # How to use（つかいかた）
-つかいかたはじっけんをしてだいたいのしようかくていがすんだあとにこうしんするよ。
+![teaser](teaser.gif)
+1. クローンやダウンロードして、おきにいりのブラウザで iamatch.html をひらいてね
+2. ファイルの選択から sample_data/sample.xlsx をひらいてね。ただしくファイルが読み込まれると、配属対象者合計の人数が50になるよ。
+3. 青色の実行ボタンをおしてみよう。配属結果一覧が表示されるよ。赤色になっている人は第一希望の研究室にならなかったひとだよ。それぞれのセルにマウスを乗せると、その人の詳細（GPA,取得単位数、希望研究室リスト）が表示されるよ。
+4. 定員を調整して、3を繰り返してみてね。
+
 
 # Requirements(ひつようなもの)
 - read-excel-file：https://www.npmjs.com/package/read-excel-file
@@ -22,6 +30,6 @@ js がどうさするブラウザがひつようだよ。ぼくがうごくこ�
 - Linux(Chrome, Firefox)
 
 # Contributor（ぼくをつくったひと）
-- フジワラケイスケ
-- ムカイトモヒコ @TomohikoMukai
-- ババテツアキ @TetsuakiBaba
+- フジワラケイスケ [keisukefujiwara.com](https://www.keisukefujiwara.com)
+- ムカイトモヒコ [TomohikoMukai@github](https://github.com/TomohikoMukai)
+- ババテツアキ [TetsuakiBaba@github](https://github.com/TetsuakiBaba)

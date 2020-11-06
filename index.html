@@ -8,8 +8,9 @@
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
 
-    <link rel="stylesheet" type="text/css" href="assets/css/iamatch.css">
+
     <link href="https://fonts.googleapis.com/css?family=M+PLUS+Rounded+1c" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="assets/css/iamatch.css">
 
     <!-- For old IEs -->
     <link rel="shortcut icon" href="./assets/images/favicon/favicon.ico" />
@@ -53,11 +54,12 @@
 </head>
 
 <body>
+
     <div class="container-fluid">
 
         <div class="jumbotron jumbotron-fluid">
             <div class="container">
-                <img src="./assets/images/iamatch_medium.png" class="rounded float-right">
+                <img id="iamatch" src="./assets/images/iamatch_medium.png" class="rounded float-right">
                 <h1 class="display-4">iamatch（イアマッチ）</h1>
 
                 <p class="lead">
@@ -75,12 +77,16 @@
         </div>
 
 
-        <div class="row">
+        <div id="list" class="row">
 
 
 
             <div class="col-sm">
+
                 <div id="input-placeholder">
+
+
+
                     <!--
           <div class="input-group input-group-sm">
 
@@ -161,6 +167,9 @@
         </div>
     </div>
 
+    <div id="canvas">
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.js"></script>
     <script>
         bsCustomFileInput.init();
@@ -169,6 +178,9 @@
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.min.js" integrity="sha512-WIklPM6qPCIp6d3fSSr90j+1unQHUOoWDS4sdTiR8gxUTnyZ8S2Mr8e10sKKJ/bhJgpAa/qG068RDkg6fIlNFA==" crossorigin="anonymous"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/addons/p5.sound.min.js" integrity="sha512-wM+t5MzLiNHl2fwT5rWSXr2JMeymTtixiw2lWyVk1JK/jDM4RBSFoH4J8LjucwlDdY6Mu84Kj0gPXp7rLGaDyA==" crossorigin="anonymous"></script>
+
 
     <script src="https://unpkg.com/read-excel-file@4.x/bundle/read-excel-file.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>

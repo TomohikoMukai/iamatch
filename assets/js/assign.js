@@ -6,35 +6,34 @@ $(function() {
     $('[data-toggle="tooltip"]').tooltip()
 })
 
-function setup() {
+var canvas;
+var noise_x = 0.0;
+var noise_y = 0.0;
+var end_time;
+var img_iamatch;
+var sound_calc;
+var sound_done;
 
+// function keyPressed() {
+
+//     if (key == 'a') {
+//         end_time = millis() + 2000;
+//         canvas.show();
+//         sound_cals.play();
+//         document.getElementById("iamatch").hidden = true;
+//         loop();
+//     }
+// }
+
+function setup() {
+    canvas = createCanvas(windowWidth, windowHeight);
+    canvas.parent('canvas');
+    end_time = millis();
+    noLoop();
+    frameRate(15);
+    //canvas.hide();
     // labsのオブジェクト型配列に基づいてhtmlで一覧表示をする。
     for (let i = 0; i < labs.length; i++) {
-        // let div_main = createDiv('');
-        // div_main.addClass("input-group input-group-sm")
-        // let div = createDiv('');
-        // div.addClass('input-group-prepend');
-        // let span_studio_name = createSpan('スタジオ名');
-        // span_studio_name.addClass('input-group-text');
-        // span_studio_name.parent(div)
-        // div.parent(div_main);
-        // let input = createInput(labs[i].name, 'text');
-        // input.attribute('readonly', 'readonly');
-        // input.addClass('form-control');
-        // input.parent(div_main);
-
-        // let div_capacity = createDiv('');
-        // div_capacity.addClass('input-group-prepend');
-        // let span_capacity = createSpan('配属枠（MAX）');
-        // span_capacity.addClass('input-group-text');
-        // span_capacity.parent(div_capacity);
-        // div_capacity.parent(div_main);
-        // let input_capacity = createInput(labs[i].slots, 'number');
-        // input_capacity.addClass('form-control');
-        // input_capacity.changed(changedCapacity);
-        // input_capacity.parent(div_main);
-        // div_main.parent('input-placeholder');
-
         let tr = createElement('tr');
         tr.parent('studio_list')
         let td_lab_name = createElement('td', labs[i].name);
@@ -64,6 +63,45 @@ function setup() {
     select('#button_execute').mouseClicked(assign);
     document.getElementById("sum_of_capacity").value = updateSlots();
 
+}
+
+
+
+function preload() {
+    img_iamatch = loadImage('assets/images/iamatch_medium.png')
+    sound_cals = loadSound('assets/sounds/VSQSE_0504_spin1.mp3');
+    sound_done = loadSound('assets/sounds/VSQSE_0528_kiran_3.mp3');
+}
+
+
+
+function draw() {
+    console.log(isLooping());
+    imageMode(CENTER);
+    clear(255);
+    background(255, 0);
+
+    if (millis() > end_time && millis() > 1000) {
+        sound_done.play();
+        canvas.hide();
+        noLoop();
+        document.getElementById("iamatch").hidden = false;
+        document.getElementById("list").hidden = false;
+    } else if (millis() <= end_time) {
+        let r = 20.0;
+        let x = r * noise(noise_x);
+        let y = r * noise(noise_y);
+        image(img_iamatch, width / 2 + x,
+            height / 2 + y);
+        textSize(100);
+        noise_x += 10.1;
+        noise_y += 10.1;
+    }
+
+}
+
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
 }
 
 function changedCapacity() {
@@ -97,6 +135,7 @@ let fileInfo;
 let reader;
 
 function assign() {
+
     updateSlots();
     for (let i = 0; i < labs.length; i++) {
         labs[i].element_assigned.value(0);
@@ -105,6 +144,14 @@ function assign() {
         window.alert("最初にファイルをアップロードしてください。");
         return;
     }
+
+    end_time = millis() + 2000;
+    canvas.show();
+    sound_cals.play();
+    document.getElementById("iamatch").hidden = true;
+    document.getElementById("list").hidden = true;
+    loop();
+
     // 配属アルゴリズム本体
     // エクセルファイルを読み込んで，読み込み成功なら処理をすすめる
     let numSlots = 0;
@@ -294,6 +341,8 @@ function assign() {
         statisticsElement.innerHTML = displayElement;
 
     });
+
+    canvas.show();
 
 }
 

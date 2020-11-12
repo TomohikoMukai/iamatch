@@ -31,6 +31,7 @@ function getCandidateStudioCombination(A) {
 }
 
 function getAssignPatterns() {
+    studio_patterns = [];
     assign_patterns = [];
     var min = document.getElementById("min").value;
     var max = document.getElementById("max").value;

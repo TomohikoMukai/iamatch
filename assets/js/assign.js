@@ -61,8 +61,16 @@ function setup() {
     select('#button_execute').mouseClicked(assign);
     select('#min').changed(minChanged);
     select('#max').changed(minChanged);
+    select('#toggle_all_checkboxes').changed(toggleAllCheckboxes);
     document.getElementById("sum_of_capacity").value = updateSlots();
     document.getElementById("sum_studio").value = labs.length;
+
+}
+
+function toggleAllCheckboxes() {
+    labs.forEach(lab => {
+        lab.element_search.checked(this.checked());
+    });
 
 }
 

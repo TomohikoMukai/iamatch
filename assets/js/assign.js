@@ -32,7 +32,7 @@ function setup() {
 
         let td_capacity = createElement('td');
         let input_capacity = createInput(labs[i].slots, 'number');
-        input_capacity.mouseClicked(changedCapacity);
+        input_capacity.changed(changedCapacity);
         input_capacity.addClass('form-control form-control-sm');
         input_capacity.parent(td_capacity);
         td_capacity.parent(tr);
@@ -51,7 +51,7 @@ function setup() {
         checkbox_search.mouseClicked(proposeReduction);
         td_search.parent(tr);
 
-
+        labs[i].element_tr = tr;
         labs[i].element_lab_name = td_lab_name;
         labs[i].element_slots = input_capacity;
         labs[i].element_assigned = input_assigned;
@@ -59,18 +59,27 @@ function setup() {
     }
 
     select('#button_execute').mouseClicked(assign);
+    select('#min').changed(minChanged);
+    select('#max').changed(minChanged);
     document.getElementById("sum_of_capacity").value = updateSlots();
+    document.getElementById("sum_studio").value = labs.length;
+
+}
+
+function minChanged() {
+    getAssignPatterns();
+}
+
+function maxChanged() {
+    getAssignPatterns();
 
 }
 
 // Checkが入っている研究室の中から最もGPAが低い学生を探し，その学生が所属する研究室を見つける
 function proposeReduction() {
     for (let i = 0; i < labs.length; i++) {
-        console.log(labs[i].element_lab_name.hasClass("bg-danger"));
-        if (labs[i].element_lab_name.hasClass("bg-danger")) {
-            console.log(labs[i].name);
-            labs[i].element_lab_name.removeClass("bg-danger");
-            labs[i].element_lab_name.removeClass("text-white");
+        if (labs[i].element_tr.hasClass("table-danger")) {
+            labs[i].element_tr.removeClass("table-danger");
         }
     }
 
@@ -103,9 +112,8 @@ function proposeReduction() {
 
     // array[0]に入っている研究室が定員削減対象研究室になるため，わかるように表示する
     let lab = labs.find((l) => l.name === array[0].name);
-    if (!lab.element_lab_name.hasClass("bg-danger")) {
-        lab.element_lab_name.addClass("bg-danger");
-        lab.element_lab_name.addClass("text-white");
+    if (!lab.element_tr.hasClass("table-danger")) {
+        lab.element_tr.addClass("table-danger");
     }
 
 }
@@ -147,6 +155,18 @@ function windowResized() {
 }
 
 function changedCapacity() {
+    let max = int(document.getElementById('max').value);
+    let min = int(document.getElementById('min').value);
+    if (this.value() > max) {
+        alert("上限を超えて設定はできません");
+        this.value(max);
+        return;
+    }
+    if (this.value() < min) {
+        alert("下限をより小さな値は設定はできません");
+        this.value(min);
+        return;
+    }
     let sum_of_capacity = updateSlots();
     document.getElementById("sum_of_capacity").value = sum_of_capacity;
 }
@@ -181,9 +201,7 @@ function assign() {
     updateSlots();
     for (let i = 0; i < labs.length; i++) {
         labs[i].element_assigned.value(0);
-        if (labs[i].element_lab_name.hasClass("bg-danger text-white")) {
-            labs[i].element_lab_name.removeClass("bg-danger text-white");
-        }
+
     }
     if (!fileInfo) {
         window.alert("最初にファイルをアップロードしてください。");
@@ -328,9 +346,9 @@ function assign() {
                     }
 
                     // 落選処理が行われた研究室は検索チェックをONに変更
-                    const target_namme = lab.name;
-                    let target = labs.find((l) => l.name === lab.name);
-                    target.element_search.checked(true);
+                    // const target_namme = lab.name;
+                    // let target = labs.find((l) => l.name === lab.name);
+                    // target.element_search.checked(true);
 
                 }
                 lab.member = lab.applicants; // 配属されたメンバーを member として保存しておく
@@ -413,7 +431,8 @@ form.student.addEventListener('change', function(event) {
     fileInfo = event.target.files[0];
     let sum_of_row = 0;
     readXlsxFile(fileInfo).then(function(rows) {
-        document.getElementById("sum_of_candidate").value = rows.length - 1;
+        document.getElementById("sum_student").value = rows.length - 1;
+        getAssignPatterns();
     });
 
 });

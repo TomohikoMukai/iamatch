@@ -66,8 +66,11 @@ function setup() {
 // Checkが入っている研究室の中から最もGPAが低い学生を探し，その学生が所属する研究室を見つける
 function proposeReduction() {
     for (let i = 0; i < labs.length; i++) {
-        if (labs[i].element_lab_name.hasClass("bg-danger text-white")) {
-            labs[i].element_lab_name.removeClass("bg-danger text-white");
+        console.log(labs[i].element_lab_name.hasClass("bg-danger"));
+        if (labs[i].element_lab_name.hasClass("bg-danger")) {
+            console.log(labs[i].name);
+            labs[i].element_lab_name.removeClass("bg-danger");
+            labs[i].element_lab_name.removeClass("text-white");
         }
     }
 
@@ -100,7 +103,10 @@ function proposeReduction() {
 
     // array[0]に入っている研究室が定員削減対象研究室になるため，わかるように表示する
     let lab = labs.find((l) => l.name === array[0].name);
-    lab.element_lab_name.addClass("bg-danger text-white");
+    if (!lab.element_lab_name.hasClass("bg-danger")) {
+        lab.element_lab_name.addClass("bg-danger");
+        lab.element_lab_name.addClass("text-white");
+    }
 
 }
 

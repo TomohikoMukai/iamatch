@@ -14,21 +14,12 @@ var img_iamatch;
 var sound_calc;
 var sound_done;
 
-// function keyPressed() {
-
-//     if (key == 'a') {
-//         end_time = millis() + 2000;
-//         canvas.show();
-//         sound_cals.play();
-//         document.getElementById("iamatch").hidden = true;
-//         loop();
-//     }
-// }
 
 function setup() {
     canvas = createCanvas(windowWidth, windowHeight);
     canvas.parent('canvas');
     end_time = millis();
+    canvas.hide();
     noLoop();
     frameRate(15);
     //canvas.hide();
@@ -43,7 +34,6 @@ function setup() {
         let input_capacity = createInput(labs[i].slots, 'number');
         input_capacity.mouseClicked(changedCapacity);
         input_capacity.addClass('form-control form-control-sm');
-        input_capacity.attribute('size', '10');
         input_capacity.parent(td_capacity);
         td_capacity.parent(tr);
 
@@ -51,13 +41,21 @@ function setup() {
         let input_assigned = createInput("0", 'text');
         input_assigned.addClass('form-control form-control-sm');
         input_assigned.attribute('readonly', 'readonly');
-        input_assigned.attribute('size', '7');
         input_assigned.parent(td_assigned);
         td_assigned.parent(tr);
 
+        let td_search = createElement('td');
+        let checkbox_search = createCheckbox("", false);
+        input_assigned.addClass('form-control form-control-sm col-xs-4');
+        checkbox_search.parent(td_search);
+        checkbox_search.mouseClicked(proposeReduction);
+        td_search.parent(tr);
 
+
+        labs[i].element_lab_name = td_lab_name;
         labs[i].element_slots = input_capacity;
         labs[i].element_assigned = input_assigned;
+        labs[i].element_search = checkbox_search;
     }
 
     select('#button_execute').mouseClicked(assign);
@@ -65,7 +63,46 @@ function setup() {
 
 }
 
+// Checkが入っている研究室の中から最もGPAが低い学生を探し，その学生が所属する研究室を見つける
+function proposeReduction() {
+    for (let i = 0; i < labs.length; i++) {
+        if (labs[i].element_lab_name.hasClass("bg-danger text-white")) {
+            labs[i].element_lab_name.removeClass("bg-danger text-white");
+        }
+    }
 
+    // checkが入っている研究室の中からgpaが最も低い学生のgpa数値と所属研究室名を含む連想配列を準備する
+    var array = [];
+    labs.forEach(lab => {
+        if (lab.element_search.checked()) {
+            array.push({
+                name: lab.name,
+                gpa: lab.member[0].gpa,
+                units: lab.member[0].units
+            });
+        }
+    });
+
+    // 出来上がったarrayをgpa順に昇順ソートする
+    array.sort(function(x, y) {
+        if (y.gpa != x.gpa) {
+            return x.gpa - y.gpa;
+        }
+        if (y.units == x.units) {
+            alert("同率のため比較不可: " + lab.name + " / " +
+                students[x.id].name + " - " +
+                students[y.id].name);
+            throw new Error("同率のため比較不可");
+        }
+        return x.units - y.units;
+        return 0;
+    })
+
+    // array[0]に入っている研究室が定員削減対象研究室になるため，わかるように表示する
+    let lab = labs.find((l) => l.name === array[0].name);
+    lab.element_lab_name.addClass("bg-danger text-white");
+
+}
 
 function preload() {
     img_iamatch = loadImage('assets/images/iamatch_medium.png')
@@ -74,19 +111,19 @@ function preload() {
 }
 
 
+var is_animating = false;
 
 function draw() {
-    console.log(isLooping());
     imageMode(CENTER);
     clear(255);
     background(255, 0);
-
-    if (millis() > end_time && millis() > 1000) {
+    if (millis() > end_time && is_animating == true) {
         sound_done.play();
         canvas.hide();
         noLoop();
         document.getElementById("iamatch").hidden = false;
         document.getElementById("list").hidden = false;
+        is_animating = false;
     } else if (millis() <= end_time) {
         let r = 20.0;
         let x = r * noise(noise_x);
@@ -97,7 +134,6 @@ function draw() {
         noise_x += 10.1;
         noise_y += 10.1;
     }
-
 }
 
 function windowResized() {
@@ -139,18 +175,25 @@ function assign() {
     updateSlots();
     for (let i = 0; i < labs.length; i++) {
         labs[i].element_assigned.value(0);
+        if (labs[i].element_lab_name.hasClass("bg-danger text-white")) {
+            labs[i].element_lab_name.removeClass("bg-danger text-white");
+        }
     }
     if (!fileInfo) {
         window.alert("最初にファイルをアップロードしてください。");
         return;
     }
 
-    end_time = millis() + 2000;
-    canvas.show();
-    sound_cals.play();
-    document.getElementById("iamatch").hidden = true;
-    document.getElementById("list").hidden = true;
-    loop();
+    // iamatchアニメーション設定
+    if (document.getElementById('animation').checked) {
+        end_time = millis() + 2000;
+        canvas.show();
+        sound_cals.play();
+        document.getElementById("iamatch").hidden = true;
+        document.getElementById("list").hidden = true;
+        is_animating = true;
+        loop();
+    }
 
     // 配属アルゴリズム本体
     // エクセルファイルを読み込んで，読み込み成功なら処理をすすめる
@@ -277,7 +320,18 @@ function assign() {
                     if (students[sid].entry.length <= 0) {
                         students[sid].status = "unassigned";
                     }
+
+                    // 落選処理が行われた研究室は検索チェックをONに変更
+                    const target_namme = lab.name;
+                    let target = labs.find((l) => l.name === lab.name);
+                    target.element_search.checked(true);
+
                 }
+                lab.member = lab.applicants; // 配属されたメンバーを member として保存しておく
+                // 配属者のgpaを昇順でソートする
+                lab.member.sort(function(x, y) {
+                    return x.gpa - y.gpa;
+                });
                 lab.applicants = [] // 志望者リストのクリア
             });
         }
@@ -319,7 +373,6 @@ function assign() {
                     return true;
                 }
             });
-            //console.log(lab_assigned[0]);
             let num = lab_assigned[0].element_assigned.value();
             num++;
             lab_assigned[0].element_assigned.value(num);
@@ -327,7 +380,6 @@ function assign() {
         });
         resultElement.innerHTML = displayElement;
         $('[data-toggle="tooltip"]').tooltip()
-
 
 
         displayElement = '';
@@ -340,9 +392,13 @@ function assign() {
         }
         statisticsElement.innerHTML = displayElement;
 
+        proposeReduction();
     });
 
-    canvas.show();
+
+    if (document.getElementById('animation').checked) {
+        canvas.show();
+    }
 
 }
 

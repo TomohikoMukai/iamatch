@@ -15,7 +15,7 @@
 ![teaser](teaser.gif)
 
 使うだけなら、したのリンクからためせるよ。
-  * https://github.com/TetsuakiBaba/iamatch
+  * https://tetsuakibaba.github.io/iamatch/
   * [サンプルデータ](https://github.com/TetsuakiBaba/iamatch/blob/master/sample_data/sample.xlsx )
 
 ## ローカルで実行する

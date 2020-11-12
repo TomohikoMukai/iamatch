@@ -70,7 +70,7 @@
                 <ol>
                     <li>ファイル選択から志望一覧の入ったエクセルファイルを選択する</li>
                     <li>実行ボタンを押す</li>
-                    <li>配属人数を変更して実行して、塩梅をみる</li>
+                    <li>配属人数を変更して実行して、塩梅をみる．チェックを入れると定員削減候補の研究室が赤色で表示されます．</li>
                     <li>以上から得られた結果を参考にして、配属先を決定する</li>
                 </ol>
             </div>
@@ -98,7 +98,7 @@
                                 <th scope="col">研究室名</th>
                                 <th scope="col">定員</th>
                                 <th scope="col">配属者数</th>
-                                <th scope="col">検索</th>
+                                <th scope="col"><input type="checkbox" id="toggle_all_checkboxes"></th>
                             </tr>
                         </thead>
                         <tbody id="studio_list"></tbody>
@@ -110,14 +110,31 @@
 
                 <div class="input-group">
                     <div class="input-group-append">
+                        <span class="input-group-text">下限</span>
+                    </div>
+                    <input type="number" id="min" class="form-control" value=2 />
+                    <div class="input-group-append">
+                        <span class="input-group-text">上限</span>
+                    </div>
+                    <input type="number" id="max" class="form-control" value=5 />
+                    <div class="input-group-append">
+                        <span class="input-group-text">研究室数</span>
+                    </div>
+                    <input type="number" id="sum_studio" class="form-control" placeholder="--" readonly />
+                </div>
+
+                <div class="input-group">
+                    <div class="input-group-append">
                         <span class="input-group-text">配属枠合計</span>
                     </div>
                     <input type="text" id="sum_of_capacity" class="form-control" readonly />
                     <div class="input-group-append">
                         <span class="input-group-text">配属対象者合計</span>
                     </div>
-                    <input type="text" id="sum_of_candidate" class="form-control" placeholder="--" readonly />
+                    <input type="text" id="sum_student" class="form-control" placeholder="--" readonly />
                 </div>
+
+
 
 
 
@@ -144,8 +161,12 @@
                     </div>
                 </div>
 
-
+                <hr>
+                <p id="assign_patterns_placeholder">
+                </p>
             </div>
+
+
             <div class="col-sm">
 
                 <table class="table table-striped table-hover table-sm">
@@ -197,6 +218,7 @@
 
     <script lang="javascript" src="assets/js/labs.js"></script>
     <script lang="javascript" src="assets/js/assign.js"></script>
+    <script lang="javascript" src="assets/js/calculate_patterns.js"></script>
 
 
 

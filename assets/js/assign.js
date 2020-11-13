@@ -30,6 +30,7 @@ let reader;
 
 // 実行ボタンで呼び出される．呼び出しはui.jsから行われます
 function assign() {
+    let privacy_mode = document.getElementById('privacy_mode').checked;
 
     updateSlots();
     for (let i = 0; i < labs.length; i++) {
@@ -137,6 +138,7 @@ function assign() {
                     let lab = labs.find(l => l.name == name);
                     lab.applicants.push({
                         id: student.id,
+                        name: student.name,
                         point: student.entry[0].point,
                         gpa: student.gpa,
                         units: student.units
@@ -196,9 +198,16 @@ function assign() {
         let statistics = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         let displayElement = '';
         students.forEach(s => {
+
+            // tooltip（マウスホバーで見えるヒント情報）の設定
             let entry = '<h5>' + s.name + "の配属希望一覧</h5>";
-            entry = entry + 'GPA:' + s.gpa + ', ' + '取得単位:' + s.units + '<br>';
-            for (let i = 0; i < s.entry.length; i++) {
+            if (privacy_mode) {
+                entry = entry + 'GPA:' + "--" + '<br>' + '取得単位:' + "--" + '<br>';
+            } else {
+                entry = entry + 'GPA:' + s.gpa + '<br>' + '取得単位:' + s.units + '<br>';
+            }
+
+            for (let i = 0; i < s.entry_original.length; i++) {
                 entry =
                     entry + str(i + 1) + ":" +
                     s.entry_original[i].lab + "[" +
@@ -236,11 +245,11 @@ function assign() {
 
         });
         resultElement.innerHTML = displayElement;
-        $('[data-toggle="tooltip"]').tooltip()
+
 
 
         displayElement = '';
-        for (let i = 0; i < 12; ++i) {
+        for (let i = 0; i < labs.length; ++i) {
             displayElement += '<tr>';
             displayElement += `<td>${i + 1}</td>`;
             displayElement += `<td>${statistics[i]}</td>`;
@@ -249,6 +258,25 @@ function assign() {
         }
         statisticsElement.innerHTML = displayElement;
 
+
+
+        // 各研究室に配属された学生(lab.member)を tooltipでまとめて見えるようにする．
+        labs.forEach(lab => {
+            let list = "";
+            lab.member.forEach(m => {
+
+                if (privacy_mode) {
+                    list += "anonymous" + " : " + "--" + " : " + "--" + "<br>";
+                } else {
+                    list += m.name + " : " + m.gpa + " : " + m.units + "<br>";
+                }
+            });
+            lab.element_td_assigned.attribute("data-html", "true");
+            lab.element_td_assigned.attribute("data-toggle", "tooltip");
+            lab.element_td_assigned.attribute("data-placement", "top");
+            lab.element_td_assigned.attribute("title", list);
+        });
+        $('[data-toggle="tooltip"]').data('bs.tooltip', false).tooltip()
         proposeReduction();
     });
 

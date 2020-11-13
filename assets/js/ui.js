@@ -17,6 +17,8 @@ function setup() {
     // labsのオブジェクト型配列に基づいてhtmlで一覧表示をする。
     for (let i = 0; i < labs.length; i++) {
         let tr = createElement('tr');
+
+
         tr.parent('studio_list')
         let td_lab_name = createElement('td', labs[i].name);
         td_lab_name.parent(tr);
@@ -35,6 +37,10 @@ function setup() {
         input_assigned.parent(td_assigned);
         td_assigned.parent(tr);
 
+
+        //td_assigned.attribute("title", "ファイルを読み込むとここに配属学生一覧が表示されます");
+        //$('[data-toggle="tooltip"]').tooltip()
+
         let td_search = createElement('td');
         let checkbox_search = createCheckbox("", false);
         input_assigned.addClass('form-control form-control-sm col-xs-4');
@@ -45,6 +51,7 @@ function setup() {
         labs[i].element_tr = tr;
         labs[i].element_lab_name = td_lab_name;
         labs[i].element_slots = input_capacity;
+        labs[i].element_td_assigned = td_assigned;
         labs[i].element_assigned = input_assigned;
         labs[i].element_search = checkbox_search;
     }

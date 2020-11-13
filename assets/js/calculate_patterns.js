@@ -10,7 +10,7 @@ function getCandidateStudioCombination(A) {
     var max = int(document.getElementById("max").value);
     var sum_studio = int(document.getElementById("sum_studio").value);
 
-    //# 終端条件 
+    // 終端条件 
     if (A.length == (max - min + 1)) {
 
         let sum = 0;
@@ -23,7 +23,7 @@ function getCandidateStudioCombination(A) {
         return;
     }
 
-    for (let i = 0; i <= int(max); i++) {
+    for (let i = 0; i <= sum_studio; i++) {
         A.push(i)
         getCandidateStudioCombination(A)
         A.pop() //# これが結構ポイント

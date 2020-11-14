@@ -263,7 +263,7 @@ function assign() {
         // 各研究室に配属された学生(lab.member)を tooltipでまとめて見えるようにする．
         labs.forEach(lab => {
             let list = "";
-            lab.member.forEach(m => {
+            lab.member.slice().reverse().forEach(m => {
 
                 if (privacy_mode) {
                     list += "anonymous" + " : " + "--" + " : " + "--" + "<br>";

@@ -30,7 +30,12 @@ function getCandidateStudioCombination(A) {
     }
 }
 
+
+
 function getAssignPatterns() {
+
+    // 組み合わせによっては時間がかかる場合があるので，組み合わせを計算中アニメーションを表示させておく．
+    var place_to_show = document.getElementById("assign_patterns_placeholder");
     studio_patterns = [];
     assign_patterns = [];
     var min = document.getElementById("min").value;
@@ -38,9 +43,10 @@ function getAssignPatterns() {
     var sum_studio = document.getElementById("sum_studio").value;
     var sum_student = document.getElementById("sum_student").value;
 
+
     // 合計が12になるスタジオ構成のすべての組み合わせを返す
     getCandidateStudioCombination([]);
-    studio_patterns.forEach(r => {
+    studio_patterns.some(function(r) {
         let sum = 0;
         var num = [];
         for (let i = max; i >= min; i--) {
@@ -54,12 +60,23 @@ function getAssignPatterns() {
         if (sum == sum_student) {
             assign_patterns.push(r);
         }
+        console.log(assign_patterns.length);
+        if (assign_patterns.length > 50) {
+            alert("配属パターンが多すぎるため処理を中断しました。最大50パターンまです。上限および下限を操作して配属パターンを減らしてください。");
+            return true;
+        }
     });
-    console.log(assign_patterns);
+    //console.log(assign_patterns);
+
     var place_to_show = document.getElementById("assign_patterns_placeholder");
-    place_to_show.innerHTML = "配属可能パターン（例：[5,2] -> 5人スタジオが5つ，4人スタジオが2つ）<br>[ max - min ]<br>";
+    place_to_show.innerHTML = "配属可能パターン（例：[5,2] -> 5人スタジオが5つ，4人スタジオが2つ）<br>[ ";
+    for (let i = max; i >= min; i--) {
+        place_to_show.innerHTML += str(i) + "人配属研究室,";
+    }
+    place_to_show.innerHTML += "]<br>";
     assign_patterns.forEach(pattern => {
         place_to_show.innerHTML += "[ " + pattern + " ]<br>";
     });
+
 
 }

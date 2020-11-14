@@ -46,6 +46,8 @@ function getAssignPatterns() {
 
     // 合計が12になるスタジオ構成のすべての組み合わせを返す
     getCandidateStudioCombination([]);
+
+    // 検索数が多すぎる場合にbreakしたかったので、someメソッドを使ってます。分かりづらい。
     studio_patterns.some(function(r) {
         let sum = 0;
         var num = [];

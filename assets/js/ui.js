@@ -62,6 +62,8 @@ function setup() {
     select('#toggle_all_checkboxes').changed(toggleAllCheckboxes);
     document.getElementById("sum_of_capacity").value = updateSlots();
     document.getElementById("sum_studio").value = labs.length;
+    document.getElementById('min').value = initial_min_assign;
+    document.getElementById('max').value = initial_max_assign;
 
 }
 

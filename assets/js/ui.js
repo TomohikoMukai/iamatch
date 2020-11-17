@@ -47,6 +47,8 @@ function setup() {
         td_assigned.parent(tr);
 
 
+
+
         //td_assigned.attribute("title", "ファイルを読み込むとここに配属学生一覧が表示されます");
         //$('[data-toggle="tooltip"]').tooltip()
 
@@ -57,12 +59,14 @@ function setup() {
         checkbox_search.mouseClicked(proposeReduction);
         td_search.parent(tr);
 
+
         labs[i].element_tr = tr;
         labs[i].element_lab_name = td_lab_name;
         labs[i].element_slots = input_capacity;
         labs[i].element_td_assigned = td_assigned;
         labs[i].element_assigned = input_assigned;
         labs[i].element_search = checkbox_search;
+
     }
 
     select('#button_execute').mouseClicked(iamatch);
@@ -164,6 +168,7 @@ function proposeReduction() {
     return lab.name;
 
 }
+
 
 function preload() {
     img_iamatch = loadImage('assets/images/iamatch_medium.png')

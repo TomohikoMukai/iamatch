@@ -318,6 +318,7 @@ function iamatch() {
         // すでに終了済み
         if (level.pos > selected_assign_pattern.length) {
             alert("すでに配属作業は終了しています");
+            document.getElementById('button_execute').innerHTML = "始める";
             level.pos = 0;
             level.has_checked = 0;
             return;
@@ -350,7 +351,7 @@ function iamatch() {
             let num = reduction_studio.element_slots.value();
             num--;
             reduction_studio.element_slots.value(num);
-
+            reduction_studio.element_search.checked(false);
 
             assigned = labs.filter(function(lab) {
                 return lab.element_assigned.value() == capacity_now;
@@ -377,30 +378,26 @@ function iamatch() {
             labs.forEach(lab => {
                 lab.element_search.checked(false);
             });
+            for (let i = 0; i < labs.length; i++) {
+                if (labs[i].element_tr.hasClass("table-danger")) {
+                    labs[i].element_tr.removeClass("table-danger");
+                }
+            }
+
         }
 
+        // 実行ボタンの表記を更新
+        document.getElementById('button_execute').innerHTML = "次へ(" + str(capacity_now) + "人研究室チェック中）";
 
-    }, 500);
+    }, 400);
 
-    setTimeout(proposeReduction, 400);
+    //setTimeout(proposeReduction, 400);
 
     // 最後の処理（1秒後に、実行ボタンはアクティブにする）
     setTimeout(function() {
-        let sum_of_capacity = updateSlots();
-        document.getElementById("sum_of_capacity").value = sum_of_capacity;
-
-
-        // //let sum_of_capacity = document.getElementById('sum_of_capacity').value;
-        // let sum_of_assigned = document.getElementById('sum_student').value;
-        // console.log(sum_of_capacity, sum_of_assigned);
-        // if (sum_of_capacity == sum_of_assigned) {
-        //     alert("配属処理は終了しています");
-        //     document.getElementById('button_execute').disabled = true;
-        // } else {
-        //     document.getElementById('button_execute').disabled = false;
-        // }
+        document.getElementById('sum_of_capacity').value = updateSlots();
         document.getElementById('button_execute').disabled = false;
-    }, 1000);
+    }, 600);
 
 
     // Core 処理ここまで

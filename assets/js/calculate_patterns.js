@@ -81,4 +81,25 @@ function getAssignPatterns() {
     });
 
 
+
+    // select要素に組み合わせをappendChildする。
+    let select = document.getElementById("select_combination");
+    var options = select.options;
+    for (let i = options.length - 1; i >= 0; i--) {
+        select.removeChild(options[i]);
+
+    }
+    //elm.remove();
+    for (let i = 0; i < assign_patterns.length; i++) {
+        var option = document.createElement("option");
+        // optionタグのテキストを配列表示に設定する
+        option.text = str(assign_patterns[i]);
+        // optionタグのvalueには対応する assignd_patterns の配列番号を保存する
+        option.value = i;
+        // selectタグの子要素にoptionタグを追加する
+        select.appendChild(option);
+    }
+
+    //console.log(assign_patterns[select.value]);
+
 }

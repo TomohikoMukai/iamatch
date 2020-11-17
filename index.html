@@ -59,7 +59,7 @@
 
         <div class="jumbotron jumbotron-fluid">
             <div class="container">
-                <img id="iamatch" src="./assets/images/iamatch_medium.png" class="rounded float-right">
+                <img id="iamatch" src="./assets/images/iamatch_medium.png" class="rounded float-right" width=150px>
                 <h1 class="display-4">iamatch（イアマッチ）</h1>
 
                 <p class="lead">
@@ -79,19 +79,9 @@
 
         <div id="list" class="row">
 
-
-
             <div class="col-sm">
 
                 <div id="input-placeholder">
-
-
-
-                    <!--
-          <div class="input-group input-group-sm">
-
-          </div>
-          -->
                     <table class="table table-striped table-hover table-sm">
                         <thead>
                             <tr>
@@ -129,7 +119,7 @@
                     </div>
                     <input type="text" id="sum_of_capacity" class="form-control" readonly />
                     <div class="input-group-append">
-                        <span class="input-group-text">配属対象者合計</span>
+                        <span class="input-group-text ">配属対象者合計</span>
                     </div>
                     <input type="text" id="sum_student" class="form-control" placeholder="--" readonly />
                 </div>
@@ -148,9 +138,22 @@
                         </form>
                     </div>
 
+
+
+
+                </div>
+
+                <div class="input-group">
+
                     <div class="input-group-append">
-                        <button class="form-control btn-primary" id="button_execute">実行</button>
+                        <span class="input-group-text">配属組み合わせ</span>
                     </div>
+
+                    <select id="select_combination" class="form-control">
+
+                    </select>
+                    <button type="button" class="btn form-control btn-danger" id="button_execute" disabled>実行</button>
+
                 </div>
 
                 <div class="input-group">

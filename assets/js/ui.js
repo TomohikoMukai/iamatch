@@ -6,6 +6,15 @@ var img_iamatch;
 var sound_calc;
 var sound_done;
 
+// ビジーwaitを使う方法
+function sleep(waitMsec) {
+    var startMsec = new Date();
+
+    // 指定ミリ秒間だけループさせる（CPUは常にビジー状態）
+    while (new Date() - startMsec < waitMsec);
+}
+
+
 function setup() {
     canvas = createCanvas(windowWidth, windowHeight);
     canvas.parent('canvas');
@@ -31,7 +40,7 @@ function setup() {
         td_capacity.parent(tr);
 
         let td_assigned = createElement('td');
-        let input_assigned = createInput("0", 'text');
+        let input_assigned = createInput("0", 'number');
         input_assigned.addClass('form-control form-control-sm');
         input_assigned.attribute('readonly', 'readonly');
         input_assigned.parent(td_assigned);
@@ -56,10 +65,11 @@ function setup() {
         labs[i].element_search = checkbox_search;
     }
 
-    select('#button_execute').mouseClicked(assign);
+    select('#button_execute').mouseClicked(iamatch);
     select('#min').changed(minChanged);
     select('#max').changed(minChanged);
     select('#toggle_all_checkboxes').changed(toggleAllCheckboxes);
+    select('#select_combination').changed(changedCombination);
     document.getElementById("sum_of_capacity").value = updateSlots();
     document.getElementById("sum_studio").value = labs.length;
     document.getElementById('min').value = initial_min_assign;
@@ -71,6 +81,16 @@ $(function() {
     $('[data-toggle="tooltip"]').tooltip()
 })
 
+function changedCombination() {
+    let max = document.getElementById('max').value;
+    labs.forEach(lab => {
+        lab.element_slots.value(max);
+    });
+    level.pos = 0;
+    level.has_checked = false;
+    document.getElementById('sum_of_capacity').value = updateSlots();
+    document.getElementById('button_execute').disabled = false;
+}
 
 
 
@@ -92,6 +112,17 @@ function maxChanged() {
 
 // Checkが入っている研究室の中から最もGPAが低い学生を探し，その学生が所属する研究室を見つける
 function proposeReduction() {
+    let count = 0;
+    labs.forEach(lab => {
+        if (lab.element_search.checked()) {
+            count++;
+        }
+    });
+    if (count == 0) {
+        return -1;
+    }
+
+    //console.log(count);
     for (let i = 0; i < labs.length; i++) {
         if (labs[i].element_tr.hasClass("table-danger")) {
             labs[i].element_tr.removeClass("table-danger");
@@ -130,6 +161,7 @@ function proposeReduction() {
     if (!lab.element_tr.hasClass("table-danger")) {
         lab.element_tr.addClass("table-danger");
     }
+    return lab.name;
 
 }
 
@@ -174,7 +206,7 @@ function changedCapacity() {
     let min = int(document.getElementById('min').value);
     if (this.value() > max) {
         alert("上限を超えて設定はできません");
-        this.value(max);
+        this.value() = max;
         return;
     }
     if (this.value() < min) {

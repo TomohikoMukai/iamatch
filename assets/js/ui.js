@@ -46,9 +46,6 @@ function setup() {
         input_assigned.parent(td_assigned);
         td_assigned.parent(tr);
 
-
-
-
         //td_assigned.attribute("title", "ファイルを読み込むとここに配属学生一覧が表示されます");
         //$('[data-toggle="tooltip"]').tooltip()
 
@@ -79,7 +76,24 @@ function setup() {
     document.getElementById('min').value = initial_min_assign;
     document.getElementById('max').value = initial_max_assign;
 
+    select('#button_save').mouseClicked(saveResult);
+
 }
+
+function saveResult() {
+    console.log("saved");
+    var data = [];
+    if (g_students === undefined) {
+        alert("先にファイルを読み込んで配属してからこのボタンは押してね");
+        return;
+    }
+    g_students.forEach(student => {
+        data.push([student.name, student.status]);
+    });
+    console.log(data);
+    (new CSV(data)).save('result.csv');
+}
+
 
 $(function() {
     $('[data-toggle="tooltip"]').tooltip()

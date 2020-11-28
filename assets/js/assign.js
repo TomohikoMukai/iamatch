@@ -25,6 +25,8 @@ const statisticsElement = document.getElementById('result_statistics');
 let fileInfo;
 let reader;
 
+var g_students;
+
 // 実行ボタンで呼び出される．呼び出しはui.jsから行われます
 function assign() {
     let privacy_mode = document.getElementById('privacy_mode').checked;
@@ -182,6 +184,7 @@ function assign() {
         let sumRankn = 0;
         let statistics = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         let displayElement = '';
+        g_students = students;
         students.forEach(s => {
 
             // tooltip（マウスホバーで見えるヒント情報）の設定
@@ -408,6 +411,8 @@ function iamatch() {
 
 
 }
+
+
 // ファイル読み込みがあったとき（ファイルに変更があったとき）
 form.student.addEventListener('change', function(event) {
     fileInfo = event.target.files[0];

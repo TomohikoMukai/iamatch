@@ -66,7 +66,6 @@ function setup() {
 
     }
 
-    select('#button_execute').mouseClicked(iamatch);
     select('#min').changed(minChanged);
     select('#max').changed(minChanged);
     select('#toggle_all_checkboxes').changed(toggleAllCheckboxes);
@@ -95,7 +94,7 @@ function saveResult() {
 }
 
 
-$(function() {
+$(function () {
     $('[data-toggle="tooltip"]').tooltip()
 })
 
@@ -160,7 +159,7 @@ function proposeReduction() {
     });
 
     // 出来上がったarrayをgpa順に昇順ソートする
-    array.sort(function(x, y) {
+    array.sort(function (x, y) {
         if (y.gpa != x.gpa) {
             return x.gpa - y.gpa;
         }

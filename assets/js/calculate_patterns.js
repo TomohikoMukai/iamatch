@@ -48,7 +48,7 @@ function getAssignPatterns() {
     getCandidateStudioCombination([]);
 
     // 検索数が多すぎる場合にbreakしたかったので、someメソッドを使ってます。分かりづらい。
-    studio_patterns.some(function(r) {
+    studio_patterns.some(function (r) {
         let sum = 0;
         var num = [];
         for (let i = max; i >= min; i--) {
@@ -71,7 +71,7 @@ function getAssignPatterns() {
     //console.log(assign_patterns);
 
     var place_to_show = document.getElementById("assign_patterns_placeholder");
-    place_to_show.innerHTML = "配属可能パターン（例：[5,2] -> 5人スタジオが5つ，4人スタジオが2つ）<br>[ ";
+    place_to_show.innerHTML = "読み込んだエクセルファイルから配属可能パターンを自動計算しました。配属組合せを選択して配属処理を開始できます。<br>（例：[5,2,1,0] -> 5人スタジオが5つ，4人スタジオが2つ、3人スタジオが1つ、2人スタジオが0）<br><br><h4>今回選択可能な配属組合せ</h4>[ ";
     for (let i = max; i >= min; i--) {
         place_to_show.innerHTML += str(i) + "人配属研究室,";
     }
@@ -99,6 +99,13 @@ function getAssignPatterns() {
         // selectタグの子要素にoptionタグを追加する
         select.appendChild(option);
     }
+
+    // alert(place_to_show.innerHTML);
+    const myModal = new bootstrap.Modal(document.getElementById('myModal'));
+    const dom_modal = document.getElementById('myModal');
+    dom_modal.querySelector('.modal-body').innerHTML = place_to_show.innerHTML;
+    dom_modal.querySelector('.modal-title').innerHTML = "配属可能なパターン一覧";
+    myModal.show();
 
     //console.log(assign_patterns[select.value]);
 

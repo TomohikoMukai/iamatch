@@ -28,25 +28,25 @@ let reader;
 var g_students;
 
 // 実行ボタンで呼び出される．呼び出しはui.jsから行われます
-function assign() {
-    let privacy_mode = document.getElementById('privacy_mode').checked;
+async function assign() {
+    try {
+        let privacy_mode = document.getElementById('privacy_mode').checked;
 
-    updateSlots();
-    for (let i = 0; i < labs.length; i++) {
-        labs[i].element_assigned.value(0);
-        labs[i].number_assigned = 0;
-    }
+        updateSlots();
+        for (let i = 0; i < labs.length; i++) {
+            labs[i].element_assigned.value(0);
+            labs[i].number_assigned = 0;
+        }
 
+        // 配属アルゴリズム本体
+        // エクセルファイルを読み込んで，読み込み成功なら処理をすすめる
+        let numSlots = 0;
+        labs.forEach(lab => {
+            numSlots += int(lab.slots);
+        });
 
+        const rows = await readXlsxFile(fileInfo);
 
-    // 配属アルゴリズム本体
-    // エクセルファイルを読み込んで，読み込み成功なら処理をすすめる
-    let numSlots = 0;
-    labs.forEach(lab => {
-        numSlots += int(lab.slots);
-    });
-
-    readXlsxFile(fileInfo).then(function(rows) {
         // エクセルテーブルをオブジェクトに準備
         // Google Spreadsheet format
         // 0: タイムスタンプ
@@ -93,11 +93,11 @@ function assign() {
                 student.entry_original.push(pref);
             }
             // 志望順位でソート
-            student.entry.sort(function(x, y) {
+            student.entry.sort(function (x, y) {
                 return x.priority - y.priority;
             });
             // 志望順位でソート
-            student.entry_original.sort(function(x, y) {
+            student.entry_original.sort(function (x, y) {
                 return x.priority - y.priority;
             });
             // 複数回応募している場合は既登録内容を上書き
@@ -134,7 +134,7 @@ function assign() {
             });
             labs.forEach(lab => {
                 // ポイント&GPA&取得単位数順に降順ソート
-                lab.applicants.sort(function(x, y) {
+                lab.applicants.sort(function (x, y) {
                     if (y.point != x.point) {
                         return y.point - x.point;
                     }
@@ -175,7 +175,7 @@ function assign() {
                 }
                 lab.member = lab.applicants; // 配属されたメンバーを member として保存しておく
                 // 配属者のgpaを昇順でソートする
-                lab.member.sort(function(x, y) {
+                lab.member.sort(function (x, y) {
                     return x.gpa - y.gpa;
                 });
                 lab.applicants = [] // 志望者リストのクリア
@@ -188,11 +188,11 @@ function assign() {
         students.forEach(s => {
 
             // tooltip（マウスホバーで見えるヒント情報）の設定
-            let entry = '<h5>' + s.name + "の配属希望一覧</h5>";
+            let entry = '' + s.name + "の配属希望一覧\n";
             if (privacy_mode) {
-                entry = entry + 'GPA:' + "--" + '<br>' + '取得単位:' + "--" + '<br>';
+                entry = entry + 'GPA:' + "--" + '\n' + '取得単位:' + "--" + '\n';
             } else {
-                entry = entry + 'GPA:' + s.gpa + '<br>' + '取得単位:' + s.units + '<br>';
+                entry = entry + 'GPA:' + s.gpa + '\n' + '取得単位:' + s.units + '\n';
             }
 
             for (let i = 0; i < s.entry_original.length; i++) {
@@ -200,7 +200,7 @@ function assign() {
                     entry + str(i + 1) + ":" +
                     s.entry_original[i].lab + "[" +
                     s.entry_original[i].point + "]" +
-                    '<br>';
+                    '\n';
             }
 
             const rankn = 13 - s.entry.length;
@@ -222,7 +222,7 @@ function assign() {
             }
 
             // 配属された研究室の配属者数を増やす
-            var lab_assigned = labs.filter(function(item, index) {
+            var lab_assigned = labs.filter(function (item, index) {
                 if (item.name.indexOf(s.status) >= 0) {
                     return true;
                 }
@@ -268,11 +268,11 @@ function assign() {
         });
         $('[data-toggle="tooltip"]').data('bs.tooltip', false).tooltip()
 
-    });
+        console.log("done")
 
-
-
-
+    } catch (e) {
+        console.log(e);
+    }
 }
 
 
@@ -281,7 +281,13 @@ var level = {
     has_checked: false
 };
 
-function iamatch() {
+/**
+ * 配属処理のメイン関数
+ * 実際の配属アルゴリズムは assign() を参照すること
+ * @param {bool} is_until_ended - trueの場合、配属処理の終わりまで何度も自動で繰り返す。Falseの場合、一回だけ実行する。
+ * @returns 
+ */
+async function iamatch(is_until_ended = false) {
 
 
     if (!fileInfo) {
@@ -291,6 +297,7 @@ function iamatch() {
 
     // 実行ボタンをdisableにする（処理が全部終わるまでは次のステップに行かせない
     document.getElementById('button_execute').disabled = true;
+    document.getElementById('button_batch_execute').disabled = true;
 
     // iamatchアニメーション設定
     if (document.getElementById('animation').checked) {
@@ -304,124 +311,136 @@ function iamatch() {
     }
 
     // Core 処理（この質問は向井先生へ）
-    assign();
+    console.time("assign");
+    await assign();
+    console.timeEnd("assign");
 
     // 研究室定員削減の処理
-    setTimeout(function() {
+    // assign_patterns[document.getElementById('select_combination')]に現在選択しているアサインパターン配列が格納されている。
+    let selected_assign_pattern = assign_patterns[document.getElementById('select_combination').value];
 
-        // assign_patterns[document.getElementById('select_combination')]に現在選択しているアサインパターン配列が格納されている。
-        let selected_assign_pattern = assign_patterns[document.getElementById('select_combination').value];
+    // 現在割り振りしているスタジオの人数枠
+    let capacity_now = document.getElementById('max').value - level.pos;
 
-        // 現在割り振りしているスタジオの人数枠
-        let capacity_now = document.getElementById('max').value - level.pos;
+    // capacity_now人数分、配属すべき数
+    let number_to_be_assigned = selected_assign_pattern[level.pos];
 
-        // capacity_now人数分、配属すべき数
-        let number_to_be_assigned = selected_assign_pattern[level.pos];
+    // すでに終了済み
+    if (level.pos > selected_assign_pattern.length) {
+        // alert("すでに配属作業は終了しています");
+        const myModal = new bootstrap.Modal(document.getElementById('myModal'));
+        const dom_modal = document.getElementById('myModal');
+        dom_modal.querySelector('.modal-title').innerHTML = "お知らせ";
+        dom_modal.querySelector('.modal-body').innerHTML = "配属処理が完了しました。<br>異なる配属組合せを検討する場合は、「配属組合せ」を変更後、再度実行してください。";
 
-        // すでに終了済み
-        if (level.pos > selected_assign_pattern.length) {
-            alert("すでに配属作業は終了しています");
-            document.getElementById('button_execute').innerHTML = "始める";
-            level.pos = 0;
-            level.has_checked = 0;
-            return;
-        }
-        // 現在人数枠で配属された研究室が幾つあるのかを調べる
-        let assigned = labs.filter(function(lab) {
-            //console.log("a", lab.element_assigned.value());
+        myModal.show();
+        document.getElementById('button_execute').innerHTML = "はじめる";
+        document.getElementById('button_batch_execute').innerHTML = "一括";
+        document.querySelector('#button_execute').disabled = false;
+        document.querySelector('#button_batch_execute').disabled = false;
+        level.pos = 0;
+        level.has_checked = 0;
+        return;
+    }
+    // 現在人数枠で配属された研究室が幾つあるのかを調べる
+    let assigned = labs.filter(function (lab) {
+        //console.log("a", lab.element_assigned.value());
+        return lab.element_assigned.value() == capacity_now;
+    });
+    //console.log("hello", number_to_be_assigned, assigned.length);
+
+    // (capacity_now）分配属された研究室数が、組み合わせ研究室数より大きい場合
+    if (assigned.length > number_to_be_assigned) {
+        labs.forEach(lab => {
+            lab.element_search.checked(false);
+        });
+        assigned.forEach(a => {
+            a.element_search.checked(true);
+        });
+
+        // 定員をへらすべきスタジオ名を教えてもらう
+        let reduction_studio_name = proposeReduction();
+
+        // 該当スタジオオブジェクトを呼び出し
+        let reduction_studio = labs.find(lab => {
+            return reduction_studio_name === lab.name;
+        });
+
+        // 該当スタジオオブジェクトの定員を位置名減らす
+        let num = reduction_studio.element_slots.value();
+        num--;
+        reduction_studio.element_slots.value(num);
+        reduction_studio.element_search.checked(false);
+
+        assigned = labs.filter(function (lab) {
             return lab.element_assigned.value() == capacity_now;
         });
-        //console.log("hello", number_to_be_assigned, assigned.length);
 
-        // (capacity_now）分配属された研究室数が、組み合わせ研究室数より大きい場合
-        if (assigned.length > number_to_be_assigned) {
-            labs.forEach(lab => {
-                lab.element_search.checked(false);
+        // すでに (max - level)よりも少ない学生しかいない研究室は一律定員を-1する
+        // ただし、(max-level）での処理分につき、最初の一回だけ実行しないといけない
+        if (level.has_checked == false) {
+            level.has_checked = true;
+            let untargeted = labs.filter(function (lab) {
+                return lab.element_assigned.value() < capacity_now;
             });
-            assigned.forEach(a => {
-                a.element_search.checked(true);
+            untargeted.forEach(lab => {
+                let v = lab.element_slots.value();
+                v--;
+                lab.element_slots.value(v);
             });
-
-            // 定員をへらすべきスタジオ名を教えてもらう
-            let reduction_studio_name = proposeReduction();
-
-            // 該当スタジオオブジェクトを呼び出し
-            let reduction_studio = labs.find(lab => {
-                return reduction_studio_name === lab.name;
-            });
-
-            // 該当スタジオオブジェクトの定員を位置名減らす
-            let num = reduction_studio.element_slots.value();
-            num--;
-            reduction_studio.element_slots.value(num);
-            reduction_studio.element_search.checked(false);
-
-            assigned = labs.filter(function(lab) {
-                return lab.element_assigned.value() == capacity_now;
-            });
-
-            // すでに (max - level)よりも少ない学生しかいない研究室は一律定員を-1する
-            // ただし、(max-level）での処理分につき、最初の一回だけ実行しないといけない
-            if (level.has_checked == false) {
-                level.has_checked = true;
-                let untargeted = labs.filter(function(lab) {
-                    return lab.element_assigned.value() < capacity_now;
-                });
-                untargeted.forEach(lab => {
-                    let v = lab.element_slots.value();
-                    v--;
-                    lab.element_slots.value(v);
-                });
+        }
+    }
+    // 減らすべき研究室がない場合
+    else {
+        level.pos++;
+        level.has_checked = false;
+        labs.forEach(lab => {
+            lab.element_search.checked(false);
+        });
+        for (let i = 0; i < labs.length; i++) {
+            if (labs[i].element_tr.hasClass("table-danger")) {
+                labs[i].element_tr.removeClass("table-danger");
             }
         }
-        // 減らすべき研究室がない場合
-        else {
-            level.pos++;
-            level.has_checked = false;
-            labs.forEach(lab => {
-                lab.element_search.checked(false);
-            });
-            for (let i = 0; i < labs.length; i++) {
-                if (labs[i].element_tr.hasClass("table-danger")) {
-                    labs[i].element_tr.removeClass("table-danger");
-                }
-            }
 
-        }
+    }
 
-        // 実行ボタンの表記を更新
-        document.getElementById('button_execute').innerHTML = "次へ(" + str(capacity_now) + "人研究室チェック中）";
+    // 実行ボタンの表記を更新
+    document.getElementById('button_execute').innerHTML = "次へ(" + str(capacity_now) + "人研究室チェック中）";
 
-    }, 400);
+
 
     //setTimeout(proposeReduction, 400);
 
-    // 最後の処理（1秒後に、実行ボタンはアクティブにする）
-    setTimeout(function() {
-        document.getElementById('sum_of_capacity').value = updateSlots();
-        document.getElementById('button_execute').disabled = false;
-    }, 600);
+    // 実行ボタンをアクティブに戻す
+    document.getElementById('sum_of_capacity').value = updateSlots();
+    document.getElementById('button_execute').disabled = false;
+    document.getElementById('button_batch_execute').disabled = false;
+
 
 
     // Core 処理ここまで
-
     if (document.getElementById('animation').checked) {
         canvas.show();
     }
 
 
+    if (is_until_ended) {
+        iamatch(true);
+    }
 }
 
 
 // ファイル読み込みがあったとき（ファイルに変更があったとき）
-form.student.addEventListener('change', function(event) {
+form.student.addEventListener('change', function (event) {
     fileInfo = event.target.files[0];
     let sum_of_row = 0;
-    readXlsxFile(fileInfo).then(function(rows) {
+    readXlsxFile(fileInfo).then(function (rows) {
         document.getElementById("sum_student").value = rows.length - 1;
         getAssignPatterns();
 
         document.getElementById('button_execute').disabled = false;
+        document.getElementById('button_batch_execute').disabled = false;
     });
 
 

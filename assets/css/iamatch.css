@@ -1,9 +1,12 @@
 body {
-    font-family: "M PLUS Rounded 1c";
+    font-family: "Noto Sans JP", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
 }
 
 html {
-    font-size: 12px;
+    /* font-size: 14px; */
     /* ルート要素のフォントサイズを1rem=14pxと定義する */
 }
 

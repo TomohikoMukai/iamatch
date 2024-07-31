@@ -15,8 +15,8 @@
 ![teaser](teaser.gif)
 
 使うだけなら、したのリンクからためせるよ。
-  * https://tetsuakibaba.github.io/iamatch/
-  * [サンプルデータ](https://github.com/TetsuakiBaba/iamatch/blob/master/sample_data/sample.xlsx )
+  * https://tomohikomukai.github.io/iamatch/
+  * [サンプルデータ](https://github.com/TomohikoMukai/iamatch/blob/master/sample_data/sample.xlsx)
 
 ## ローカルで実行する
 1. クローンやダウンロードして、iamatchディレクトリからで下記コマンドでローカルサーバを立ち上げてね。
